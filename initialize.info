@@ -1,0 +1,309 @@
+#!/bin/bash
+
+# Define project structure
+BASE_DIR="sso-java"
+EAR_DIR="$BASE_DIR/sso-ear"
+EJB_DIR="$BASE_DIR/sso-ejb"
+WAR_DIR="$BASE_DIR/sso-war"
+
+# Create directories
+mkdir -p $EAR_DIR/src/main/application/META-INF
+mkdir -p $EJB_DIR/src/main/{java/com/example/{ejb,model},resources/META-INF}
+mkdir -p $WAR_DIR/src/main/{java/com/example/servlet,resources,webapp/WEB-INF}
+
+# Create EAR pom.xml
+cat <<EOL > $EAR_DIR/pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>sso-ear</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>ear</packaging>
+
+    <modules>
+        <module>../sso-ejb</module>
+        <module>../sso-war</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>sso-war</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>sso-ejb</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>ejb</type>
+        </dependency>
+    </dependencies>
+</project>
+EOL
+
+# Create EJB pom.xml
+cat <<EOL > $EJB_DIR/pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>sso-ejb</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>ejb</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.3.7.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <version>2.0.0.Final</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ejb-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOL
+
+# Create WAR pom.xml
+cat <<EOL > $WAR_DIR/pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>sso-war</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.3.7.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <version>2.0.0.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+            <version>2.0.0.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
+            <artifactId>jboss-concurrent-api_1.0_spec</artifactId>
+            <version>1.0.0.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+            <version>1.0.1.Final</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.2.3</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOL
+
+# Create User.java in EJB module
+cat <<EOL > $EJB_DIR/src/main/java/com/example/model/User.java
+package com.example.model;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String email;
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+}
+EOL
+
+# Create persistence.xml in EJB module
+cat <<EOL > $EJB_DIR/src/main/resources/META-INF/persistence.xml
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.2">
+    <persistence-unit name="examplePU">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>com.example.model.User</class>
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/exampledb"/>
+            <property name="javax.persistence.jdbc.user" value="root"/>
+            <property name="javax.persistence.jdbc.password" value="password"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+EOL
+
+# Create UserServlet.java in WAR module
+cat <<EOL > $WAR_DIR/src/main/java/com/example/servlet/UserServlet.java
+package com.example.servlet;
+
+import com.example.model.User;
+import com.example.ejb.UserBean;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet("/user")
+public class UserServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    @EJB
+    private UserBean userBean;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("john.doe@example.com");
+
+        userBean.createUser(user);
+
+        response.getWriter().println("User created with ID: " + user.getId());
+    }
+}
+EOL
+
+# Create UserBean.java in EJB module
+cat <<EOL > $EJB_DIR/src/main/java/com/example/ejb/UserBean.java
+package com.example.ejb;
+
+import com.example.model.User;
+
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+@Stateless
+public class UserBean {
+    @PersistenceContext(unitName = "examplePU")
+    private EntityManager em;
+
+    public void createUser(User user) {
+        em.persist(user);
+    }
+}
+EOL
+
+# Create web.xml in WAR module
+cat <<EOL > $WAR_DIR/src/main/webapp/WEB-INF/web.xml
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="3.1">
+    <display-name>SSO Webapp</display-name>
+</web-app>
+EOL
+
+# Create index.jsp in WAR module (optional)
+cat <<EOL > $WAR_DIR/src/main/webapp/index.jsp
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSO Webapp</title>
+</head>
+<body>
+    <h1>Welcome to the SSO Webapp</h1>
+</body>
+</html>
+EOL
+
+# Initialize Git repository
+cd $BASE_DIR
+git init
+git add .
+git commit -m "Initial commit"
+
+# Add remote repository (replace with your GitHub repository URL)
+GITHUB_REPO_URL="https://github.com/your-username/sso-java.git"
+git remote add origin $GITHUB_REPO_URL
+git push -u origin master
+
+echo "Project structure created and pushed to GitHub successfully."
+
+chmod +x create_and_push_sso_project.sh
+./create_and_push_sso_project.sh
