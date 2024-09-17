@@ -1,3 +1,34 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <!-- Use JNDI for DataSource -->
+        <property name="hibernate.connection.datasource">java:/comp/env/jdbc/OracleDS</property>
+
+        <!-- Dialect for Oracle database -->
+        <property name="hibernate.dialect">org.hibernate.dialect.Oracle12cDialect</property>
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="hibernate.current_session_context_class">thread</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="hibernate.show_sql">true</property>
+
+        <!-- Drop and re-create the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">none</property>
+
+        <!-- Enable JNDI-based connection pool -->
+        <property name="hibernate.connection.provider_class">org.hibernate.connection.DatasourceConnectionProviderImpl</property>
+    </session-factory>
+</hibernate-configuration>
+
+
+
+
+
+
 #!/bin/bash
 
 # Define project directory
