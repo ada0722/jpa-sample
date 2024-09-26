@@ -1,0 +1,66 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+
+public class HttpPostExample {
+    public static void main(String[] args) {
+        String urlString = "http://example.com/api"; // Replace with your URL
+        String param1 = "value1";
+        String param2 = "value2";
+
+        try {
+            // Create URL object
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            
+            // Set request method to POST
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+            // Create the request body
+            String requestBody = "param1=" + param1 + "&param2=" + param2;
+
+            // Write the request body
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(requestBody.getBytes());
+                os.flush();
+            }
+
+            // Output request headers
+            System.out.println("Request Headers:");
+            for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+
+            // Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // Output response headers
+            System.out.println("Response Headers:");
+            Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+            for (Map.Entry<String, List<String>> entry : responseHeaders.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+
+            // Read and output the response body (optional)
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                System.out.println("Response Body: " + response.toString());
+            }
+
+            connection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
