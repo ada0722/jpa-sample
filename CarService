@@ -18,9 +18,17 @@ sed -i '/jersey-server/d' pom.xml
 sed -i '/jersey-core/d' pom.xml
 sed -i '/jackson-jaxrs-json-provider/d' pom.xml
 
-# Add RESTEasy and Jackson dependencies
+# Add JAX-RS, RESTEasy, and Jackson dependencies
 cat <<EOL >> pom.xml
 <dependencies>
+    <!-- JAX-RS API -->
+    <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>2.1</version>
+        <scope>provided</scope>
+    </dependency>
+
     <!-- RESTEasy JAX-RS -->
     <dependency>
         <groupId>org.jboss.resteasy</groupId>
